@@ -1,0 +1,25 @@
+{
+  "_schemaVersion": "1.0.0",
+  "sd": {
+    "inputs": [
+      {
+        "mutuallyExclusiveGroup": [
+          [
+            {
+              "name": "path",
+              "kind": "ordered",
+              "type": [
+                [
+                  "folder"
+                ],
+                [
+                  "char"
+                ]
+              ]
+            }
+          ]
+        ]
+      }
+    ]
+  }
+}
