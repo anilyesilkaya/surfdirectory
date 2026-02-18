@@ -102,9 +102,9 @@ function sd(varargin)
                     if exist(varargin{3}, "file") == 2
                         % Add a new file bookmark (absolute path)
                         if isempty(fieldnames(files))
-                            files = struct("filepath", pwd, "filename", varargin{3});
+                            files = struct("filepath", string(pwd), "filename", string(varargin{3}));
                         else
-                            files(end+1) = struct("filepath", pwd, "filename", varargin{3});
+                            files(end+1) = struct("filepath", string(pwd), "filename", string(varargin{3}));
                         end
                     else
                         warning("Requested file is not in the current path.")
@@ -148,13 +148,13 @@ function sd(varargin)
                     history = jump2directory(history, resPath);
                 case "add"
                     % Add a new bookmark (absolute path)
-                    bookmarks(varargin{3}) = pwd;
+                    bookmarks(varargin{3}) = string(pwd);
                 case "$add"
                     % Add a new bookmark (relative path)
                     if contains(pwd, matlabroot)
                         curPath = pwd;
                         curPath = erase(curPath, matlabroot);
-                        bookmarks(varargin{3}) = fullfile("<$matlabroot$>", curPath);
+                        bookmarks(varargin{3}) = string(fullfile("<$matlabroot$>", curPath));
                     else
                         warning("Path doesn't contain matlabroot!")
                     end
@@ -195,13 +195,13 @@ end
 
 function history = jump2directory(history, target)
     % Log the source
-    history(end+1).source = pwd;
+    history(end+1).source = string(pwd);
 
     % cd into the destination
     cd(target)
     
     % Log the destination
-    history(end).destination = pwd;
+    history(end).destination = string(pwd);
     history(end).last_accessed = string(datetime("now"));
     history(1).cursor = history(1).cursor + 1;
 end
