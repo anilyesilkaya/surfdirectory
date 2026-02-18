@@ -189,7 +189,7 @@ end
 function showFiles(files)
     % Create and show files table
     files_tmp = arrayfun(@(x,y) setfield(x,'item',y), files, 1:numel(files));
-    files_tmp = orderfields(files_tmp, {'item','filepath','filename'});
+    files_tmp = orderfields(files_tmp, {'item','filename','filepath'});
     disp(struct2table(files_tmp))
 end
 
