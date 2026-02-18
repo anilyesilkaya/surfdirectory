@@ -88,9 +88,14 @@ function sd(varargin)
                     % Open the file in the given entry
                     if ~isempty(fieldnames(files))
                         % Convert relative matlabroot to an absolute path
-                        absPath = resolvePath(files(str2double(varargin{3})).filepath);
+                        if contains(files(str2double(varargin{3})).filepath, "<$matlabroot$>")
+                            % Convert relative matlabroot to an absolute path
+                            resPath = resolvePath(files(str2double(varargin{3})).filepath);
+                        else
+                            resPath = files(str2double(varargin{3})).filepath;
+                        end            
                         % Open the file after the conversion
-                        edit(fullfile(absPath, files(str2double(varargin{3})).filename))
+                        edit(fullfile(resPath, files(str2double(varargin{3})).filename))
                     end
                 case "add"
                     % Check if it's a valid file
@@ -133,10 +138,14 @@ function sd(varargin)
         elseif nargin == 3 &&  strcmp(varargin{1}, "book")
             switch varargin{2}
                 case "go"
-                    % Convert relative matlabroot to an absolute path
-                    absPath = resolvePath(bookmarks(varargin{3}));
+                    if contains(bookmarks(varargin{3}), "<$matlabroot$>")
+                        % Convert relative matlabroot to an absolute path
+                        resPath = resolvePath(bookmarks(varargin{3}));
+                    else
+                        resPath = bookmarks(varargin{3});
+                    end
                     % Jump to the directory after the conversion
-                    history = jump2directory(history, absPath);
+                    history = jump2directory(history, resPath);
                 case "add"
                     % Add a new bookmark (absolute path)
                     bookmarks(varargin{3}) = pwd;
