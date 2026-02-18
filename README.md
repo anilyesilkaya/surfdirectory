@@ -230,4 +230,5 @@ v0.1
 
 ## 📄 License
 
-Add your preferred license here (e.g., MIT).
+MIT License
+Copyright (c) 2026 Anil Yesilkaya
