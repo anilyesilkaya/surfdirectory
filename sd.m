@@ -1,49 +1,276 @@
 function sd(varargin)
-    % sd : help
-    % sd .directory/: jumps into that directory
-    % sd matlabroot or sd -root: jumps into matlabroot
-    % sd -: goes back one step in time
-    % sd -h: jump history
-    prefGroup = "surfdirectory";
-    prefName  = "bookmarks";
+%SD  SurfDirectory: enhanced "cd" with history + bookmarks + files.
+%
+%   Type:
+%       sd 
+%   to print the full usage help.
+    prefGroup     = "surfdirectory";
+    bookmarksName = "bookmarks";
+    historyName   = "history";
+    filesName     = "files";
 
-    % Ensure preference exists
-    if ~ispref(prefGroup, prefName)
-        bookmarks = struct();
-        setpref(prefGroup, prefName, bookmarks);
+   % --- Initialization ---
+    
+    % Fetch the existing bookmarks, otherwise initialize
+    if ~ispref(prefGroup, bookmarksName)
+        bookmarks = initBookmarks(prefGroup, bookmarksName);
     else
-        bookmarks = getpref(prefGroup, prefName);
+        bookmarks = getpref(prefGroup, bookmarksName);
     end
 
-    % Input handling
-    if nargin == 0
-        showHelp(bookmarks);
-    elseif nargin == 1
-        var = varargin{1};
-        if strcmp(var, "matlabroot") || strcmp(var, "-root")
-            sd(matlabroot)
-        elseif strcmp(var, "-")
-            % Handle the case for going back in history
-        else
-            assert((isa(var, "string") || isa(var,"char")), "Input must be a char or string of the relative path")
-            cd(var)
+    % Fetch the existing history, otherwise initialize
+    if ~ispref(prefGroup, historyName)
+        history = initHistory(prefGroup, historyName);
+    else
+        history = getpref(prefGroup, historyName);
+    end
+
+    % Fetch the existing opened files, otherwise initialize
+    if ~ispref(prefGroup, filesName)
+        files = initFiles(prefGroup, filesName);
+    else
+        files = getpref(prefGroup, filesName);
+    end
+
+    % --- surf code ---
+    try
+        if nargin == 0
+            showHelp(); % Show the help text
+        elseif nargin == 1
+            % Jump into the requested directory
+            history = jump2directory(history, varargin{1});
+        elseif nargin == 2 && strcmp(varargin{1}, "go")
+            switch varargin{2}
+                case {"matlabroot", "root"}
+                    history = jump2directory(history, matlabroot);
+                case {"back", "b"}
+                    if history(1).cursor > 1
+                        history(1).cursor = history(1).cursor - 1;
+                        cd(history(history(1).cursor).source)
+                    end
+                case {"fwd", "f"}
+                    if history(1).cursor < numel(history)
+                        history(1).cursor = history(1).cursor + 1;
+                        cd(history(history(1).cursor).source)
+                    end
+            end
+        elseif nargin == 2 && strcmp(varargin{1}, "book")
+            switch varargin{2}
+                case "show"
+                    disp(entries(bookmarks))
+                case "export"
+                    save("bookmarks.mat","bookmarks")
+                case "load"
+                    data = load("bookmarks.mat");
+                    bookmarks = data.bookmarks;
+                case "clear"
+                    bookmarks = initBookmarks(prefGroup, bookmarksName);  % clear bookmarks
+            end
+        elseif nargin == 2 && strcmp(varargin{1}, "hist")
+            switch varargin{2}
+                case "show"
+                    showHistory(history)
+                case "clear"
+                    history = initHistory(prefGroup, historyName); % clear history
+            end
+        elseif nargin == 2 && strcmp(varargin{1}, "files")
+            switch varargin{2}
+                case "show"
+                    if ~isempty(fieldnames(files))
+                        showFiles(files)
+                    end
+                case "clear"
+                    files = initFiles(prefGroup, filesName); % clear files
+            end
+        elseif nargin == 3 && strcmp(varargin{1}, "files")
+            switch varargin{2}
+                case "open"
+                    % Open the file in the given entry
+                    if ~isempty(fieldnames(files))
+                        % Convert relative matlabroot to an absolute path
+                        absPath = resolvePath(files(str2double(varargin{3})).filepath);
+                        % Open the file after the conversion
+                        edit(fullfile(absPath, files(str2double(varargin{3})).filename))
+                    end
+                case "add"
+                    % Check if it's a valid file
+                    if exist(varargin{3}, "file") == 2
+                        % Add a new file bookmark (absolute path)
+                        if isempty(fieldnames(files))
+                            files = struct("filepath", pwd, "filename", varargin{3});
+                        else
+                            files(end+1) = struct("filepath", pwd, "filename", varargin{3});
+                        end
+                    else
+                        warning("Requested file is not in the current path.")
+                    end
+                case "$add"
+                    % Check if it's a valid file
+                    if exist(varargin{3}, "file") == 2
+                        % Add a new bookmark (relative path)
+                        if contains(pwd, matlabroot)
+                            curPath = pwd;
+                            curPath = erase(curPath, matlabroot);
+                            % Is files initialized
+                            if isempty(fieldnames(files))
+                                files = struct("filepath", pwd, "filename", varargin{3});
+                            else
+                                files(end+1) = struct("filepath", fullfile("<$matlabroot$>", curPath), "filename", varargin{3});
+                            end
+                        else
+                            warning("Path doesn't contain matlabroot!")
+                        end
+                    else
+                        warning("Requested file is not in the current path.")
+                    end
+                case "remove"
+                    % Remove the given entry (based on the item ID)
+                    files(str2double(varargin{3})) = [];
+            end
+        elseif nargin == 3 && strcmp(varargin{1}, "hist") && strcmp(varargin{2}, "go")
+            % Jump to the directory with the user requested index
+            history = jump2directory(history, history(str2double(varargin{3})).destination);
+        elseif nargin == 3 &&  strcmp(varargin{1}, "book")
+            switch varargin{2}
+                case "go"
+                    % Convert relative matlabroot to an absolute path
+                    absPath = resolvePath(bookmarks(varargin{3}));
+                    % Jump to the directory after the conversion
+                    history = jump2directory(history, absPath);
+                case "add"
+                    % Add a new bookmark (absolute path)
+                    bookmarks(varargin{3}) = pwd;
+                case "$add"
+                    % Add a new bookmark (relative path)
+                    if contains(pwd, matlabroot)
+                        curPath = pwd;
+                        curPath = erase(curPath, matlabroot);
+                        bookmarks(varargin{3}) = fullfile("<$matlabroot$>", curPath);
+                    else
+                        warning("Path doesn't contain matlabroot!")
+                    end
+                case "remove"
+                    bookmarks = remove(bookmarks, varargin{3});
+            end
         end
+        setpref(prefGroup, bookmarksName, bookmarks);
+        setpref(prefGroup, historyName, history);
+        setpref(prefGroup, filesName, files);
+    catch e
+        throw(e)
     end
 end
 
-% Local helpers
+% Local helper functions
 
-function showHelp(bookmarks)
-    fprintf("\n------------------------------------------------\n");
-    fprintf("surfdirectory (sd)\n");
-    fprintf("------------------------------------------------\n");
-    fprintf("Usage:\n");
-    fprintf("  sd                 - Show this help and list bookmarks\n");
-    fprintf("  sd name            - cd to bookmark 'name'\n");
-    fprintf("  sd -add name       - Add bookmark for current folder\n");
-    fprintf("  sd -add name path  - Add bookmark for 'path'\n");
-    fprintf("  sd -list           - List bookmarks\n");
-    fprintf("  sd -remove name    - Remove bookmark 'name'\n\n");
+function absPath = resolvePath(path)
+    if contains(path, "<$matlabroot$>")
+        absPath = fullfile(replace(path, "<$matlabroot$>", matlabroot));
+    end
+end
+
+function showHistory(history)
+    % Create and show history table
+    history_tmp = arrayfun(@(x,y) setfield(x,'item',y), history, 1:numel(history));
+    history_tmp = rmfield(history_tmp, 'cursor');
+    history_tmp = orderfields(history_tmp, {'item','destination','source','last_accessed'});
+    disp(struct2table(history_tmp))
+end
+
+function showFiles(files)
+    % Create and show files table
+    files_tmp = arrayfun(@(x,y) setfield(x,'item',y), files, 1:numel(files));
+    files_tmp = orderfields(files_tmp, {'item','filepath','filename'});
+    disp(struct2table(files_tmp))
+end
+
+function history = jump2directory(history, target)
+    % Log the source
+    history(end+1).source = pwd;
+
+    % cd into the destination
+    cd(target)
     
-    % localListBookmarks(bookmarks);
+    % Log the destination
+    history(end).destination = pwd;
+    history(end).last_accessed = string(datetime("now"));
+    history(1).cursor = history(1).cursor + 1;
+end
+
+function bookmarks = initBookmarks(prefGroup, bookmarksName)
+    % The reserved token <$matlabroot$> is used to prevent
+    % collisions with user-defined bookmarks.
+    bookmarks = dictionary("matlabroot", "<$matlabroot$>", "root", "<$matlabroot$>");
+    setpref(prefGroup, bookmarksName, bookmarks);
+end
+
+function history = initHistory(prefGroup, historyName)
+    history = struct("source", pwd, "destination", pwd, "last_accessed", string(datetime("now")), 'cursor', 1);
+    setpref(prefGroup, historyName, history);
+end
+
+function files = initFiles(prefGroup, filesName)
+    files = struct();
+    setpref(prefGroup, filesName, files);
+end
+
+function showHelp
+    fprintf("%s", helpText());
+end
+
+function txt = helpText()
+    txt = sprintf([ ...
+        '\n------------------------------------------------\n' ...
+        'SurfDirectory (sd)\n' ...
+        '------------------------------------------------\n\n' ...
+        'Usage:\n' ...
+        '  sd\n' ...
+        '      Show this help.\n\n' ...
+        '  sd <directory>\n' ...
+        '      Change directory to <directory> and log in history.\n\n' ...
+        'Go shortcuts:\n' ...
+        '  sd go matlabroot | root\n' ...
+        '      Jump to MATLAB root.\n' ...
+        '  sd go back | b\n' ...
+        '      Jump back one step (previous source folder).\n' ...
+        '  sd go fwd  | f\n' ...
+        '      Jump forward one step.\n\n' ...
+        'Bookmarks:\n' ...
+        '  sd book show\n' ...
+        '      Display bookmarks.\n' ...
+        '  sd book add <name>\n' ...
+        '      Add bookmark <name> for the current folder (absolute path).\n' ...
+        '  sd book $add <name>\n' ...
+        '      Add bookmark <name> for the current folder (relative to matlabroot).\n' ...
+        '  sd book remove <name>\n' ...
+        '      Remove bookmark <name>.\n' ...
+        '  sd book go <name>\n' ...
+        '      Jump to bookmark <name>.\n' ...
+        '  sd book export\n' ...
+        '      Save bookmarks to bookmarks.mat (current folder).\n' ...
+        '  sd book load\n' ...
+        '      Load bookmarks from bookmarks.mat (current folder).\n' ...
+        '  sd book clear\n' ...
+        '      Clear bookmarks (reinitialize defaults).\n\n' ...
+        'History:\n' ...
+        '  sd hist show\n' ...
+        '      Display history.\n' ...
+        '  sd hist clear\n' ...
+        '      Clear history (reinitialize).\n' ...
+        '  sd hist go <index>\n' ...
+        '      Jump to history entry <index>.\n\n' ...
+        'Files:\n' ...
+        '  sd files show\n' ...
+        '      Display file entries.\n' ...
+        '  sd files add <filename>\n' ...
+        '      Add a file entry for <filename> in the current folder (absolute path).\n' ...
+        '  sd files $add <filename>\n' ...
+        '      Add a file entry for <filename> in the current folder (relative to matlabroot).\n' ...
+        '  sd files remove <index>\n' ...
+        '      Remove file entry <index>.\n' ...
+        '  sd files open <index>\n' ...
+        '      Open file entry <index> in the editor.\n\n' ...
+        'Notes:\n' ...
+        '  - Bookmarks, history, and files are stored in preferences under group "surfdirectory".\n\n' ...
+    ]);
 end
