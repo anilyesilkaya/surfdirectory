@@ -104,7 +104,7 @@ function updateFunctionSignatures(~)
         paramFilesFilename = struct();
         paramFilesFilename.name = "filename";
         paramFilesFilename.kind = "ordered";
-        paramFilesFilename.type = {{"char"}};   % could be "foo.m"
+        paramFilesFilename.type = {"file=*.*"};
 
         groupFiles_add = {paramFiles, paramFiles2_add, paramFilesFilename};
 
