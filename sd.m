@@ -65,7 +65,7 @@ function sd(varargin)
                         disp(entries(bookmarks))
                     end
                 case "export"
-                    save("bookmarks.mat","bookmarks")
+                    save("bookmarks.mat", "bookmarks")
                 case "load"
                     data = load("bookmarks.mat");
                     bookmarks = data.bookmarks;
@@ -87,6 +87,11 @@ function sd(varargin)
                     end
                 case "clear"
                     files = initFiles(prefGroup, filesName); % clear files
+                case "export"
+                    save("files.mat", "files")
+                case "load"
+                    data = load("files.mat", "files");
+                    files = data.files;
             end
         elseif nargin == 3 && strcmp(varargin{1}, "files")
             switch varargin{2}
