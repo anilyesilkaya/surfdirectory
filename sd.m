@@ -42,7 +42,11 @@ function sd(varargin)
         elseif nargin == 2 && strcmp(varargin{1}, "go")
             switch varargin{2}
                 case {"matlabroot", "root"}
-                    history = jump2directory(history, matlabroot);
+                    if contains(matlabroot, "runnable")
+                        history = jump2directory(history, erase(matlabroot, "/runnable"));
+                    else
+                        history = jump2directory(history, matlabroot);
+                    end
                 case {"back", "b"}
                     if history(1).cursor > 1
                         history(1).cursor = history(1).cursor - 1;
