@@ -36,14 +36,14 @@ function updateFunctionSignatures(~)
         paramBook.kind = "ordered";
         paramBook.type = {"choices={'book'}"};
 
-        % book show|export|load|clear  (2-arg form)
+        % book show|export|load|clear (2-arg form)
         paramBook2_simple = struct();
         paramBook2_simple.name = "cmd2";
         paramBook2_simple.kind = "ordered";
         paramBook2_simple.type = {"choices={'show','export','load','clear'}"};
         groupBook_simple = {paramBook, paramBook2_simple};
 
-        % book add|$add|remove|go <name>  (3-arg form)
+        % book add|$add|remove|go <name> (3-arg form)
         paramBook2_action = struct();
         paramBook2_action.name = "cmd2";
         paramBook2_action.kind = "ordered";
@@ -62,14 +62,14 @@ function updateFunctionSignatures(~)
         paramHist.kind = "ordered";
         paramHist.type = {"choices={'hist'}"};
 
-        % hist show|clear  (2-arg form)
+        % hist show|clear (2-arg form)
         paramHist2_simple = struct();
         paramHist2_simple.name = "cmd2";
         paramHist2_simple.kind = "ordered";
         paramHist2_simple.type = {"choices={'show','clear'}"};
         groupHist_simple = {paramHist, paramHist2_simple};
 
-        % hist go <index>  (3-arg form)
+        % hist go <index> (3-arg form)
         paramHist2_go = struct();
         paramHist2_go.name = "cmd2";
         paramHist2_go.kind = "ordered";
@@ -88,14 +88,27 @@ function updateFunctionSignatures(~)
         paramFiles.kind = "ordered";
         paramFiles.type = {"choices={'files'}"};
 
-        % files show|clear  (2-arg form)
+        % files show|clear (2-arg form)
         paramFiles2_simple = struct();
         paramFiles2_simple.name = "cmd2";
         paramFiles2_simple.kind = "ordered";
         paramFiles2_simple.type = {"choices={'show','clear'}"};
         groupFiles_simple = {paramFiles, paramFiles2_simple};
 
-        % files add|$add <filename>  (3-arg form)
+        % files open|remove <alias> (3-arg form)
+        paramFiles2_idx = struct();
+        paramFiles2_idx.name = "cmd2";
+        paramFiles2_idx.kind = "ordered";
+        paramFiles2_idx.type = {"choices={'open','remove'}"};
+
+        paramFilesAlias = struct();
+        paramFilesAlias.name = "alias";
+        paramFilesAlias.kind = "ordered";
+        paramFilesAlias.type = {{"char"}};   % dictionary key / alias
+
+        groupFiles_idx = {paramFiles, paramFiles2_idx, paramFilesAlias};
+
+        %% ---------- Option 6: sd files add|$add <filename> <alias> ----
         paramFiles2_add = struct();
         paramFiles2_add.name = "cmd2";
         paramFiles2_add.kind = "ordered";
@@ -106,28 +119,14 @@ function updateFunctionSignatures(~)
         paramFilesFilename.kind = "ordered";
         paramFilesFilename.type = {"file=*.*"};
 
-        groupFiles_add = {paramFiles, paramFiles2_add, paramFilesFilename};
+        paramFilesAlias2 = struct();
+        paramFilesAlias2.name = "alias";
+        paramFilesAlias2.kind = "ordered";
+        paramFilesAlias2.type = {{"char"}};
 
-        % files open|remove <index> (3-arg form)
-        paramFiles2_idx = struct();
-        paramFiles2_idx.name = "cmd2";
-        paramFiles2_idx.kind = "ordered";
-        paramFiles2_idx.type = {"choices={'open','remove'}"};
-
-        paramFilesIndex = struct();
-        paramFilesIndex.name = "index";
-        paramFilesIndex.kind = "ordered";
-        paramFilesIndex.type = {{"char"}};      % user types 1, "1", etc.
-
-        groupFiles_idx = {paramFiles, paramFiles2_idx, paramFilesIndex};
+        groupFiles_add4 = {paramFiles, paramFiles2_add, paramFilesFilename, paramFilesAlias2};
 
         %% ---------- Mutually exclusive top-level shapes ---------------
-        % sd <folder>
-        % sd go <target>
-        % sd book <...>
-        % sd hist <...>
-        % sd files <...>
-
         inputStruct = struct();
         inputStruct.mutuallyExclusiveGroup = { ...
             {paramFolder}, ...
@@ -137,8 +136,8 @@ function updateFunctionSignatures(~)
             groupHist_simple, ...
             groupHist_go, ...
             groupFiles_simple, ...
-            groupFiles_add, ...
-            groupFiles_idx ...
+            groupFiles_idx, ...
+            groupFiles_add4 ...
         };
 
         sdStruct = struct();
