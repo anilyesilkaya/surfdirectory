@@ -191,19 +191,28 @@ function showHistory(history)
     history_tmp = arrayfun(@(x,y) setfield(x,'item',y), history, 1:numel(history));
     history_tmp = rmfield(history_tmp, 'cursor');
     history_tmp = orderfields(history_tmp, {'item','destination','source','last_accessed'});
-    disp(struct2table(history_tmp))
+    disp(struct2table(history_tmp));
+    disp(join(["Cursor: ", history(1).cursor],''))
+
 end
 
 function history = jump2directory(history, target)
+    maxHist = 1000; % maximum history size
+    if numel(history) > maxHist
+        idx = 1;
+    else
+        idx = numel(history) + 1;
+    end
+
     % Log the source
-    history(end+1).source = string(pwd);
+    history(idx).source = string(pwd);
     
     % cd into the destination
     cd(target)
     
     % Log the destination
-    history(end).destination = string(pwd);
-    history(end).last_accessed = string(datetime("now"));
+    history(idx).destination = string(pwd);
+    history(idx).last_accessed = string(datetime("now"));
     history(1).cursor = history(1).cursor + 1;
 end
 
