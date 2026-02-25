@@ -105,8 +105,6 @@ function sd(varargin)
                             if contains(pth, "<$matlabroot$>")
                                 % Convert relative matlabroot to an absolute path
                                 pth = resolvePath(files(varargin{3}));
-                            else
-                                pth = fullfile(matlabroot, pth);
                             end
                             % Open the file after the conversion
                             edit(pth)
@@ -130,10 +128,10 @@ function sd(varargin)
                     % Check if it's a valid file and key doesn't exist
                     if exist(varargin{3}, "file") == 2
                         % Add a new bookmark (relative path)
-                        if contains(pwd, matlabroot)
-                            curPath = pwd;
-                            curPath = erase(curPath, matlabroot);
-                            % Is files initialized
+                        curPath = pwd;
+                        if contains(curPath, matlabroot)
+                            curPath = replace(curPath, matlabroot, "<$matlabroot$>");
+                            % Is the files initialized
                             files(varargin{4}) = fullfile(string(curPath), varargin{3});
                         else
                             warning("Path doesn't contain matlabroot!")
