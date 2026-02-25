@@ -101,18 +101,20 @@ function sd(varargin)
                         % Open the file if alias matches
                         if isKey(files, varargin{3})
                             % Convert relative matlabroot to an absolute path
-                            resPath = files(varargin{3});
-                            if contains(resPath, "<$matlabroot$>")
+                            pth = files(varargin{3});
+                            if contains(pth, "<$matlabroot$>")
                                 % Convert relative matlabroot to an absolute path
-                                resPath = resolvePath(files(str2double(varargin{3})).filepath);
+                                pth = resolvePath(files(varargin{3}));
+                            else
+                                pth = fullfile(matlabroot, pth);
                             end
                             % Open the file after the conversion
-                            edit(resPath)
+                            edit(pth)
                         end
                     end
                 case "remove"
                     % Remove the given entry (based on the item ID)
-                    files = remove(files, varargin{2});
+                    files = remove(files, varargin{3});
             end
         elseif nargin == 4 && strcmp(varargin{1}, "files")
             switch varargin{2}
@@ -148,12 +150,12 @@ function sd(varargin)
                 case "go"
                     if contains(bookmarks(varargin{3}), "<$matlabroot$>")
                         % Convert relative matlabroot to an absolute path
-                        resPath = resolvePath(bookmarks(varargin{3}));
+                        pth = resolvePath(bookmarks(varargin{3}));
                     else
-                        resPath = bookmarks(varargin{3});
+                        pth = bookmarks(varargin{3});
                     end
                     % Jump to the directory after the conversion
-                    history = jump2directory(history, resPath);
+                    history = jump2directory(history, pth);
                 case "add"
                     % Add a new bookmark (absolute path)
                     bookmarks(varargin{3}) = string(pwd);
@@ -180,9 +182,9 @@ end
 
 % Local helper functions
 
-function absPath = resolvePath(path)
-    if contains(path, "<$matlabroot$>")
-        absPath = fullfile(replace(path, "<$matlabroot$>", matlabroot));
+function absPath = resolvePath(pth)
+    if contains(pth, "<$matlabroot$>")
+        absPath = fullfile(replace(pth, "<$matlabroot$>", matlabroot));
     end
 end
 
