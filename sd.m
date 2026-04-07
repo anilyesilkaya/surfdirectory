@@ -61,9 +61,7 @@ function sd(varargin)
         elseif nargin == 2 && strcmp(varargin{1}, "book")
             switch varargin{2}
                 case "show"
-                    if isConfigured(bookmarks)
-                        disp(entries(bookmarks))
-                    end
+                    showBookmarks(bookmarks)
                 case "export"
                     save("bookmarks.mat", "bookmarks")
                 case "load"
@@ -82,9 +80,7 @@ function sd(varargin)
         elseif nargin == 2 && strcmp(varargin{1}, "files")
             switch varargin{2}
                 case "show"
-                    if isConfigured(files)
-                        disp(entries(files))
-                    end
+                   showFiles(files)
                 case "clear"
                     files = initFiles(prefGroup, filesName); % clear files
                 case "export"
@@ -186,14 +182,29 @@ function absPath = resolvePath(pth)
     end
 end
 
+function showFiles(files)
+    fprintf('\n');
+    fprintf('\n');
+end
+
+function showBookmarks(bookmarks)
+    % Create and show bookmarks table
+    if isConfigured(bookmarks)
+        fprintf('\n');
+        disp(entries(bookmarks))
+        fprintf('\n');
+    end
+end
+
 function showHistory(history)
     % Create and show history table
-    history_tmp = arrayfun(@(x,y) setfield(x,'item',y), history, 1:numel(history));
+    history_tmp = arrayfun(@(x,y) setfield(x,'item',y), rmfield(history,"source"), 1:numel(history));
     history_tmp = rmfield(history_tmp, 'cursor');
-    history_tmp = orderfields(history_tmp, {'item','destination','source','last_accessed'});
+    history_tmp = orderfields(history_tmp, {'item','destination','last_accessed'});
+    fprintf('\n');
     disp(struct2table(history_tmp));
     disp(join(["Cursor: ", history(1).cursor],''))
-
+    fprintf('\n');
 end
 
 function history = jump2directory(history, target)
