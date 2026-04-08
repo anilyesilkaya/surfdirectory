@@ -98,7 +98,7 @@ function updateFunctionSignatures(~)
         paramBook2_action = struct();
         paramBook2_action.name = "cmd2";
         paramBook2_action.kind = "ordered";
-        paramBook2_action.type = {"choices={'add','$add','remove','go'}"};
+        paramBook2_action.type = {"choices={'add','$add','remove','rm','go'}"};
 
         paramBookName = struct();
         paramBookName.name = "name";
@@ -168,7 +168,7 @@ function updateFunctionSignatures(~)
         paramFiles2_idx = struct();
         paramFiles2_idx.name = "cmd2";
         paramFiles2_idx.kind = "ordered";
-        paramFiles2_idx.type = {"choices={'open','go','remove'}"};
+        paramFiles2_idx.type = {"choices={'open','go','remove','rm'}"};
 
         paramFilesAlias = struct();
         paramFilesAlias.name = "alias";

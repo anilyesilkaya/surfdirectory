@@ -131,7 +131,7 @@
               "name": "cmd2",
               "kind": "ordered",
               "type": [
-                "choices={'add','$add','remove','go'}"
+                "choices={'add','$add','remove','rm','go'}"
               ]
             },
             {
@@ -213,7 +213,7 @@
               "name": "cmd2",
               "kind": "ordered",
               "type": [
-                "choices={'open','go','remove'}"
+                "choices={'open','go','remove','rm'}"
               ]
             },
             {
@@ -255,6 +255,77 @@
                 [
                   "char"
                 ]
+              ]
+            }
+          ],
+          [
+            {
+              "name": "cmd1",
+              "kind": "ordered",
+              "type": [
+                "choices={'book'}"
+              ]
+            },
+            {
+              "name": "cmd2",
+              "kind": "ordered",
+              "type": [
+                "choices={'add'}"
+              ]
+            },
+            {
+              "name": "name",
+              "kind": "ordered",
+              "type": [
+                [
+                  "char"
+                ]
+              ]
+            },
+            {
+              "name": "flag",
+              "kind": "ordered",
+              "type": [
+                "choices={'--rel'}"
+              ]
+            }
+          ],
+          [
+            {
+              "name": "cmd1",
+              "kind": "ordered",
+              "type": [
+                "choices={'files'}"
+              ]
+            },
+            {
+              "name": "cmd2",
+              "kind": "ordered",
+              "type": [
+                "choices={'add'}"
+              ]
+            },
+            {
+              "name": "filename",
+              "kind": "ordered",
+              "type": [
+                "file=*.*"
+              ]
+            },
+            {
+              "name": "alias",
+              "kind": "ordered",
+              "type": [
+                [
+                  "char"
+                ]
+              ]
+            },
+            {
+              "name": "flag",
+              "kind": "ordered",
+              "type": [
+                "choices={'--rel'}"
               ]
             }
           ]
