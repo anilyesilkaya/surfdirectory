@@ -183,8 +183,11 @@ function absPath = resolvePath(pth)
 end
 
 function showFiles(files)
-    fprintf('\n');
-    fprintf('\n');
+    if isConfigured(files)
+        fprintf('\n');
+        disp(entries(files))
+        fprintf('\n');
+    end
 end
 
 function showBookmarks(bookmarks)
