@@ -17,6 +17,12 @@ function updateFunctionSignatures(~)
         paramFolder.kind = "ordered";
         paramFolder.type = {{"folder"}};
 
+        %% ---------- Option: sd back|b|-|fwd|f --------------------------
+        paramNav = struct();
+        paramNav.name = "nav";
+        paramNav.kind = "ordered";
+        paramNav.type = {"choices={'back','b','-','fwd','f'}"};
+
         %% ---------- Option 2: sd go <target> --------------------------
         paramGo = struct();
         paramGo.name = "cmd1";
@@ -130,6 +136,7 @@ function updateFunctionSignatures(~)
         inputStruct = struct();
         inputStruct.mutuallyExclusiveGroup = { ...
             {paramFolder}, ...
+            {paramNav}, ...
             groupGo, ...
             groupBook_simple, ...
             groupBook_action, ...
