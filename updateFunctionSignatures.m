@@ -150,7 +150,7 @@ function updateFunctionSignatures(~)
         paramFiles2_idx = struct();
         paramFiles2_idx.name = "cmd2";
         paramFiles2_idx.kind = "ordered";
-        paramFiles2_idx.type = {"choices={'open','remove'}"};
+        paramFiles2_idx.type = {"choices={'open','go','remove'}"};
 
         paramFilesAlias = struct();
         paramFilesAlias.name = "alias";

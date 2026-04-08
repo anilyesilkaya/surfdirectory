@@ -213,7 +213,7 @@
               "name": "cmd2",
               "kind": "ordered",
               "type": [
-                "choices={'open','remove'}"
+                "choices={'open','go','remove'}"
               ]
             },
             {
