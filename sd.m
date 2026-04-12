@@ -285,15 +285,36 @@ function showBookmarks(bookmarks)
     end
 end
 
+function printHeader(title)
+    fprintf('\n  <strong>%s</strong>\n', title);
+    fprintf('  %s\n', repmat('-', 1, strlength(title) + 4));
+end
+
 function showHistory(history)
-    % Create and show history table
-    history_tmp = arrayfun(@(x,y) setfield(x,'item',y), rmfield(history,"source"), 1:numel(history));
-    history_tmp = rmfield(history_tmp, 'cursor');
-    history_tmp = orderfields(history_tmp, {'item','destination','last_accessed'});
-    fprintf('\n');
-    disp(struct2table(history_tmp));
-    disp(join(["Cursor: ", history(1).cursor],''))
-    fprintf('\n');
+    if numel(history) < 1
+        fprintf('\n  No history entries.\n\n');
+        return
+    end
+
+    printHeader('History');
+
+    cursor = history(1).cursor;
+    n = numel(history);
+
+    items = (1:n)';
+    destinations = {history.destination}';
+    timestamps = {history.last_accessed}';
+
+    marker = repmat({'|'}, n, 1);
+    if cursor >= 1 && cursor <= n
+        marker{cursor} = '-->';
+    end
+
+    tbl = table(categorical(marker), items, string(destinations), string(timestamps), ...
+        'VariableNames', {'Ptr', 'Item', 'Destination', 'Last Accessed'});
+
+    disp(tbl)
+    fprintf('  %d entries, cursor at %d\n\n', n, cursor);
 end
 
 function history = jump2directory(history, target)
